@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "My Todo List",
+    "slug": "my-todo-list",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAFAF8"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FAFAF8"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.yourname.mytodolist"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "My Todo List",
+      "shortName": "TodoList",
+      "description": "A cozy todo list app to help you stay organized",
+      "backgroundColor": "#FAFAF8",
+      "themeColor": "#7CB69D"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ]
+  }
+}
