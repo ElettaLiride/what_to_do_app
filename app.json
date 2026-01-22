@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "My Todo List",
-    "slug": "my-todo-list",
+    "slug": "what_to_do_app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -32,6 +32,9 @@
       "description": "A cozy todo list app to help you stay organized",
       "backgroundColor": "#FAFAF8",
       "themeColor": "#7CB69D"
+    },
+    "experiments": {
+      "baseUrl": "/what_to_do_app"
     },
     "plugins": [
       "@react-native-community/datetimepicker"
