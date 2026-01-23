@@ -1,26 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#7CB69D">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="My Todo List">
-  <title>My Todo List</title>
-  <meta name="description" content="A cozy todo list app to help you stay organized">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>My Todo List</title>
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+    <meta name="theme-color" content="#7CB69D">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="My Todo List">
+    <meta name="description" content="A cozy todo list app to help you stay organized">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/what_to_do_app/manifest.json">
+    <!-- Favicon and Icons -->
+    <link rel="icon" href="/what_to_do_app/favicon.ico">
+    <link rel="apple-touch-icon" href="/what_to_do_app/icon-192.png">
+  </head>
 
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/what_to_do_app/manifest.json">
-
-  <!-- Favicon and Icons -->
-  <link rel="icon" href="/what_to_do_app/favicon.ico">
-  <link rel="apple-touch-icon" href="/what_to_do_app/icon-192.png">
-</head>
-<body>
-  <div id="root"></div>
-  <script src="/what_to_do_app/_expo/static/js/web/index-2aa3594dd85cdda5da65100cea7a6e2e.js" defer></script>
-  <!-- Service Worker Registration -->
-  <script src="/what_to_do_app/register-sw.js"></script>
-</body>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script src="/what_to_do_app/_expo/static/js/web/index-5ec0bf2f91e1e5798b33bf3b9c981702.js" defer></script>
+    <script src="/what_to_do_app/register-sw.js"></script>
+  </body>
 </html>
