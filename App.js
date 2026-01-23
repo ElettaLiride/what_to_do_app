@@ -3,10 +3,12 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, View } from 'react-native';
+import { Text, View, Platform } from 'react-native';
 
 import { AppProvider } from './src/context/AppContext';
 import { colors, fontSize } from './src/theme/theme';
+
+const isWeb = Platform.OS === 'web';
 import {
   HomeScreen,
   TasksScreen,
@@ -83,30 +85,41 @@ function GroupsStackNavigator() {
 
 // Main Tab Navigator
 function MainTabNavigator() {
+  // Use simple tab bar on web, floating tab bar on native
+  const tabBarStyle = isWeb
+    ? {
+        backgroundColor: colors.card,
+        borderTopColor: colors.border,
+        paddingBottom: 8,
+        paddingTop: 8,
+        height: 65,
+      }
+    : {
+        backgroundColor: colors.card,
+        borderTopColor: colors.border,
+        paddingBottom: 8,
+        paddingTop: 8,
+        height: 65,
+        position: 'absolute',
+        bottom: 25,
+        left: 16,
+        right: 16,
+        borderRadius: 20,
+        borderTopWidth: 0,
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+      };
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.card,
-          borderTopColor: colors.border,
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 65,
-          position: 'absolute',
-          bottom: 25,
-          left: 16,
-          right: 16,
-          borderRadius: 20,
-          borderTopWidth: 0,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 8,
-        },
+        tabBarStyle,
         tabBarLabelStyle: {
           fontSize: fontSize.xs,
           fontWeight: '500',

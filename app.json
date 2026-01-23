@@ -31,10 +31,9 @@
       "shortName": "TodoList",
       "description": "A cozy todo list app to help you stay organized",
       "backgroundColor": "#FAFAF8",
-      "themeColor": "#7CB69D"
-    },
-    "experiments": {
-      "baseUrl": "/what_to_do_app"
+      "themeColor": "#7CB69D",
+      "publicPath": "/what_to_do_app/",
+      "basePath": "/what_to_do_app"
     },
     "plugins": [
       "@react-native-community/datetimepicker"
