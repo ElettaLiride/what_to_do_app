@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,11 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  TextInput,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+const isWeb = Platform.OS === 'web';
 import {
   colors,
   spacing,
@@ -37,6 +40,7 @@ export default function TaskDetailScreen({ route, navigation }) {
   const [subtasksToShow, setSubtasksToShow] = useState(existingTask?.subtasksToShow || 2);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const webDateInputRef = useRef(null);
 
   const isCompleted = existingTask?.completed || false;
   const completedAt = existingTask?.completedAt;
@@ -107,6 +111,19 @@ export default function TaskDetailScreen({ route, navigation }) {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
       setDueDate(selectedDate);
+    }
+  };
+
+  const handleWebDateChange = (event) => {
+    const dateString = event.target.value;
+    if (dateString) {
+      setDueDate(new Date(dateString + 'T12:00:00'));
+    }
+  };
+
+  const openWebDatePicker = () => {
+    if (webDateInputRef.current) {
+      webDateInputRef.current.click();
     }
   };
 
@@ -269,22 +286,47 @@ export default function TaskDetailScreen({ route, navigation }) {
       {/* Due Date */}
       <Text style={styles.label}>Due Date (optional)</Text>
       <View style={styles.dateRow}>
-        <TouchableOpacity
-          style={styles.dateButton}
-          onPress={() => !isCompleted && setShowDatePicker(true)}
-          disabled={isCompleted}
-        >
-          <Text style={styles.dateButtonText}>
-            {dueDate
-              ? dueDate.toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })
-              : 'Set due date'}
-          </Text>
-        </TouchableOpacity>
+        {isWeb ? (
+          /* Web: Use native HTML date input */
+          <View style={styles.webDateContainer}>
+            <input
+              ref={webDateInputRef}
+              type="date"
+              value={dueDate ? dueDate.toISOString().split('T')[0] : ''}
+              onChange={handleWebDateChange}
+              min={new Date().toISOString().split('T')[0]}
+              disabled={isCompleted}
+              style={{
+                flex: 1,
+                padding: 12,
+                fontSize: 16,
+                borderRadius: 8,
+                border: '1px solid #E8E5E0',
+                backgroundColor: '#FFFFFF',
+                color: '#3D3D3D',
+                cursor: isCompleted ? 'not-allowed' : 'pointer',
+              }}
+            />
+          </View>
+        ) : (
+          /* Native: Use TouchableOpacity to trigger DateTimePicker */
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => !isCompleted && setShowDatePicker(true)}
+            disabled={isCompleted}
+          >
+            <Text style={styles.dateButtonText}>
+              {dueDate
+                ? dueDate.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'Set due date'}
+            </Text>
+          </TouchableOpacity>
+        )}
         {dueDate && !isCompleted && (
           <TouchableOpacity onPress={clearDate} style={styles.clearDateButton}>
             <Text style={styles.clearDateText}>Clear</Text>
@@ -292,7 +334,8 @@ export default function TaskDetailScreen({ route, navigation }) {
         )}
       </View>
 
-      {showDatePicker && (
+      {/* Native-only DateTimePicker */}
+      {!isWeb && showDatePicker && (
         <DateTimePicker
           value={dueDate || new Date()}
           mode="date"
@@ -602,6 +645,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  webDateContainer: {
+    flex: 1,
   },
   dateButton: {
     flex: 1,
