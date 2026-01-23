@@ -27,6 +27,87 @@ jobs:
       - name: Build web app
         run: npx expo export -p web
 
+      - name: Fix paths for GitHub Pages subdirectory
+        run: |
+          # Fix script and favicon paths in index.html
+          sed -i 's|src="/_expo/|src="/what_to_do_app/_expo/|g' dist/index.html
+          sed -i 's|href="/favicon.ico"|href="/what_to_do_app/favicon.ico"|g' dist/index.html
+
+      - name: Add PWA meta tags to index.html
+        run: |
+          # Add PWA meta tags before </head>
+          sed -i 's|</head>|  <meta name="apple-mobile-web-app-capable" content="yes">\n    <meta name="apple-mobile-web-app-status-bar-style" content="default">\n    <meta name="apple-mobile-web-app-title" content="My Todo List">\n    <link rel="manifest" href="/what_to_do_app/manifest.json">\n    <link rel="apple-touch-icon" href="/what_to_do_app/icon-192.png">\n  </head>|g' dist/index.html
+          # Add service worker registration before </body>
+          sed -i 's|</body>|  <script src="/what_to_do_app/register-sw.js"></script>\n</body>|g' dist/index.html
+
+      - name: Create PWA manifest
+        run: |
+          cat > dist/manifest.json << 'EOF'
+          {
+            "name": "My Todo List",
+            "short_name": "TodoList",
+            "description": "A cozy todo list app to help you stay organized",
+            "start_url": "/what_to_do_app/",
+            "scope": "/what_to_do_app/",
+            "display": "standalone",
+            "background_color": "#FAFAF8",
+            "theme_color": "#7CB69D",
+            "orientation": "portrait",
+            "icons": [
+              {
+                "src": "/what_to_do_app/icon-192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any"
+              },
+              {
+                "src": "/what_to_do_app/icon-512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any"
+              },
+              {
+                "src": "/what_to_do_app/icon-512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "maskable"
+              }
+            ]
+          }
+          EOF
+
+      - name: Create Service Worker
+        run: |
+          cat > dist/sw.js << 'EOF'
+          const CACHE_NAME = 'todo-app-v1';
+          self.addEventListener('install', (event) => { self.skipWaiting(); });
+          self.addEventListener('activate', (event) => { event.waitUntil(clients.claim()); });
+          self.addEventListener('fetch', (event) => {
+            event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+          });
+          EOF
+
+      - name: Create Service Worker Registration
+        run: |
+          cat > dist/register-sw.js << 'EOF'
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/what_to_do_app/sw.js')
+                .then((reg) => console.log('SW registered:', reg))
+                .catch((err) => console.log('SW registration failed:', err));
+            });
+          }
+          EOF
+
+      - name: Create PWA icons
+        run: |
+          npm install -g sharp-cli
+          npx sharp-cli -i assets/icon.png -o dist/icon-192.png resize 192 192
+          npx sharp-cli -i assets/icon.png -o dist/icon-512.png resize 512 512
+
+      - name: Add .nojekyll file
+        run: touch dist/.nojekyll
+
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
