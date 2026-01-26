@@ -77,21 +77,29 @@ export default function TaskDetailScreen({ route, navigation }) {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Task',
-      'Are you sure you want to delete this task permanently?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            actions.deleteTask(taskId);
-            navigation.goBack();
+    if (isWeb) {
+      const confirmed = window.confirm('Are you sure you want to delete this task permanently?');
+      if (confirmed) {
+        actions.deleteTask(taskId);
+        navigation.goBack();
+      }
+    } else {
+      Alert.alert(
+        'Delete Task',
+        'Are you sure you want to delete this task permanently?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => {
+              actions.deleteTask(taskId);
+              navigation.goBack();
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const handleToggleComplete = () => {
