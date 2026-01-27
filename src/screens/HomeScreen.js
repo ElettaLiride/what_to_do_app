@@ -147,6 +147,18 @@ export default function HomeScreen({ navigation }) {
     }, [])
   );
 
+  // Handle marking current task as done
+  const handleMarkAsDone = () => {
+    if (currentTask) {
+      actions.completeTask(currentTask.id);
+    }
+  };
+
+  // Handle stop working on current task
+  const handleStopWorking = () => {
+    actions.clearCurrentTask();
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -183,7 +195,7 @@ export default function HomeScreen({ navigation }) {
           }}
           activeOpacity={currentTask ? 0.7 : 1}
         >
-          <Text style={styles.currentTaskLabel}>Task currently working on:</Text>
+          <Text style={styles.currentTaskLabel}>Currently working on</Text>
           {currentTask ? (
             <View style={styles.currentTaskContent}>
               <Text style={styles.currentTaskTitle} numberOfLines={2}>
@@ -196,6 +208,29 @@ export default function HomeScreen({ navigation }) {
                   </Text>
                 </View>
               )}
+              {/* Action buttons */}
+              <View style={styles.currentTaskActions}>
+                <TouchableOpacity
+                  style={styles.actionButtonLeft}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleStopWorking();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.actionButtonLeftText}>Stop working</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.actionButtonRight}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    handleMarkAsDone();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.actionButtonRightText}>Mark as Done</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : (
             <View style={styles.noTaskContent}>
@@ -329,6 +364,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.textMuted,
     marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   currentTaskContent: {
     flex: 1,
@@ -339,6 +375,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
     marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   groupBadge: {
     alignSelf: 'flex-start',
@@ -348,6 +385,40 @@ const styles = StyleSheet.create({
   },
   groupBadgeText: {
     fontSize: fontSize.xs,
+    fontWeight: '500',
+  },
+  currentTaskActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  actionButtonLeft: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+  },
+  actionButtonLeftText: {
+    fontSize: fontSize.sm,
+    color: colors.textLight,
+    fontWeight: '500',
+  },
+  actionButtonRight: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+  },
+  actionButtonRightText: {
+    fontSize: fontSize.sm,
+    color: colors.white,
     fontWeight: '500',
   },
   noTaskContent: {
