@@ -1,6 +1,9 @@
-import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react';
+import { Platform } from 'react-native';
 import { loadAllData, saveTasks, saveGroups, saveSettings } from '../storage/asyncStorage';
 import { generateId } from '../utils/taskSuggestion';
+import { validateImportData, buildExportData } from '../utils/dataExport';
+import { SyncManager } from '../sync/syncManager';
 
 const AppContext = createContext();
 
@@ -195,6 +198,14 @@ function appReducer(state, action) {
         settings: { ...state.settings, currentTaskId: action.payload },
       };
 
+    case 'MERGE_DATA':
+      return {
+        ...state,
+        tasks: action.payload.tasks,
+        groups: action.payload.groups,
+        settings: { ...state.settings, ...action.payload.settings },
+      };
+
     default:
       return state;
   }
@@ -203,6 +214,15 @@ function appReducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
+  const [syncStatus, setSyncStatus] = useState('disconnected'); // 'connected' | 'disconnected' | 'error'
+
+  // Ref to always have the latest state (avoids stale closures in SyncManager)
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  const syncManagerRef = useRef(null);
 
   // Load data on mount
   useEffect(() => {
@@ -213,6 +233,21 @@ export function AppProvider({ children }) {
     };
     loadData();
   }, []);
+
+  // Start SyncManager after initial load
+  useEffect(() => {
+    if (!isLoading && (Platform.OS === 'android' || Platform.OS === 'web')) {
+      const sm = new SyncManager(
+        () => stateRef.current,
+        (mergedData) => dispatch({ type: 'MERGE_DATA', payload: mergedData }),
+        setSyncStatus,
+      );
+      sm.start();
+      syncManagerRef.current = sm;
+
+      return () => sm.stop();
+    }
+  }, [isLoading]);
 
   // Save tasks when they change
   useEffect(() => {
@@ -234,6 +269,13 @@ export function AppProvider({ children }) {
       saveSettings(state.settings);
     }
   }, [state.settings, isLoading]);
+
+  // Trigger sync write on state changes (debounced inside SyncManager)
+  useEffect(() => {
+    if (!isLoading && syncManagerRef.current) {
+      syncManagerRef.current.writeCurrentState();
+    }
+  }, [state.tasks, state.groups, state.settings, isLoading]);
 
   // Action creators
   const actions = {
@@ -329,6 +371,22 @@ export function AppProvider({ children }) {
       dispatch({ type: 'UPDATE_SETTINGS', payload: updates });
     },
 
+    // Data management
+    importData: (data) => {
+      const validation = validateImportData(data);
+      if (!validation.valid) throw new Error(validation.error);
+      dispatch({
+        type: 'LOAD_DATA',
+        payload: {
+          tasks: data.tasks,
+          groups: data.groups,
+          settings: { ...initialState.settings, ...data.settings },
+        },
+      });
+    },
+
+    getExportData: () => buildExportData(state.tasks, state.groups, state.settings),
+
     // Helper functions
     getTaskById: (id) => state.tasks.find(task => task.id === id),
     getGroupById: (id) => state.groups.find(group => group.id === id),
@@ -353,7 +411,7 @@ export function AppProvider({ children }) {
   };
 
   return (
-    <AppContext.Provider value={{ state, actions, isLoading }}>
+    <AppContext.Provider value={{ state, actions, isLoading, syncStatus }}>
       {children}
     </AppContext.Provider>
   );

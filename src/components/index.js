@@ -6,3 +6,4 @@ export { default as GroupItem } from './GroupItem';
 export { default as SuggestButton } from './SuggestButton';
 export { default as FilterModal } from './FilterModal';
 export { default as SuggestionModal } from './SuggestionModal';
+export { default as DataManagementModal } from './DataManagementModal';

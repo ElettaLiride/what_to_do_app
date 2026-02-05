@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,15 +18,31 @@ import {
   SuggestButton,
   FilterModal,
   SuggestionModal,
+  DataManagementModal,
 } from '../components';
 
 export default function HomeScreen({ navigation }) {
-  const { state, actions, isLoading } = useApp();
+  const { state, actions, isLoading, syncStatus } = useApp();
   const [quickTaskTitle, setQuickTaskTitle] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [suggestionModalVisible, setSuggestionModalVisible] = useState(false);
   const [currentSuggestion, setCurrentSuggestion] = useState(null);
   const [skippedIds, setSkippedIds] = useState([]);
+  const [dataModalVisible, setDataModalVisible] = useState(false);
+
+  // Set up gear icon in header
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => setDataModalVisible(true)}
+          style={{ paddingHorizontal: spacing.md }}
+        >
+          <Text style={{ fontSize: fontSize.lg }}>&#9881;</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   // Get current task being worked on
   const currentTask = actions.getCurrentTask();
@@ -317,6 +333,15 @@ export default function HomeScreen({ navigation }) {
         onSkip={handleSkipSuggestion}
         onViewTask={handleViewSuggestedTask}
         onLetsDoIt={handleLetsDoIt}
+      />
+
+      {/* Data Management Modal */}
+      <DataManagementModal
+        visible={dataModalVisible}
+        onClose={() => setDataModalVisible(false)}
+        state={state}
+        actions={actions}
+        syncStatus={syncStatus}
       />
     </KeyboardAvoidingView>
   );
