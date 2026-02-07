@@ -1,9 +1,7 @@
-import React, { createContext, useContext, useReducer, useEffect, useState, useRef } from 'react';
-import { Platform } from 'react-native';
+import React, { createContext, useContext, useReducer, useEffect, useState } from 'react';
 import { loadAllData, saveTasks, saveGroups, saveSettings } from '../storage/asyncStorage';
 import { generateId } from '../utils/taskSuggestion';
 import { validateImportData, buildExportData } from '../utils/dataExport';
-import { SyncManager } from '../sync/syncManager';
 
 const AppContext = createContext();
 
@@ -214,15 +212,7 @@ function appReducer(state, action) {
 export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const [isLoading, setIsLoading] = useState(true);
-  const [syncStatus, setSyncStatus] = useState('disconnected'); // 'connected' | 'disconnected' | 'error'
-
-  // Ref to always have the latest state (avoids stale closures in SyncManager)
-  const stateRef = useRef(state);
-  useEffect(() => {
-    stateRef.current = state;
-  }, [state]);
-
-  const syncManagerRef = useRef(null);
+  const [syncStatus] = useState('disconnected'); // Sync disabled in PWA version
 
   // Load data on mount
   useEffect(() => {
@@ -233,21 +223,6 @@ export function AppProvider({ children }) {
     };
     loadData();
   }, []);
-
-  // Start SyncManager after initial load
-  useEffect(() => {
-    if (!isLoading && (Platform.OS === 'android' || Platform.OS === 'web')) {
-      const sm = new SyncManager(
-        () => stateRef.current,
-        (mergedData) => dispatch({ type: 'MERGE_DATA', payload: mergedData }),
-        setSyncStatus,
-      );
-      sm.start();
-      syncManagerRef.current = sm;
-
-      return () => sm.stop();
-    }
-  }, [isLoading]);
 
   // Save tasks when they change
   useEffect(() => {
@@ -269,13 +244,6 @@ export function AppProvider({ children }) {
       saveSettings(state.settings);
     }
   }, [state.settings, isLoading]);
-
-  // Trigger sync write on state changes (debounced inside SyncManager)
-  useEffect(() => {
-    if (!isLoading && syncManagerRef.current) {
-      syncManagerRef.current.writeCurrentState();
-    }
-  }, [state.tasks, state.groups, state.settings, isLoading]);
 
   // Action creators
   const actions = {

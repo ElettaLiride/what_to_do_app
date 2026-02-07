@@ -22,7 +22,7 @@ import {
 } from '../components';
 
 export default function HomeScreen({ navigation }) {
-  const { state, actions, isLoading, syncStatus } = useApp();
+  const { state, actions, isLoading } = useApp();
   const [quickTaskTitle, setQuickTaskTitle] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [suggestionModalVisible, setSuggestionModalVisible] = useState(false);
@@ -341,7 +341,6 @@ export default function HomeScreen({ navigation }) {
         onClose={() => setDataModalVisible(false)}
         state={state}
         actions={actions}
-        syncStatus={syncStatus}
       />
     </KeyboardAvoidingView>
   );

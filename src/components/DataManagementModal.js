@@ -19,41 +19,9 @@ import {
 
 const isWeb = Platform.OS === 'web';
 
-const isAndroid = Platform.OS === 'android';
-
-export default function DataManagementModal({ visible, onClose, state, actions, syncStatus }) {
+export default function DataManagementModal({ visible, onClose, state, actions }) {
   const fileInputRef = useRef(null);
   const [statusMessage, setStatusMessage] = useState(null);
-  const [permissionChecked, setPermissionChecked] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
-
-  // Check permission on open (Android only)
-  React.useEffect(() => {
-    if (visible && isAndroid && !permissionChecked) {
-      (async () => {
-        try {
-          const { checkStoragePermission } = await import('../utils/permissions');
-          const granted = await checkStoragePermission();
-          setHasPermission(granted);
-          setPermissionChecked(true);
-        } catch {
-          setHasPermission(false);
-          setPermissionChecked(true);
-        }
-      })();
-    }
-  }, [visible, permissionChecked]);
-
-  const handleRequestPermission = async () => {
-    try {
-      const { requestStoragePermission } = await import('../utils/permissions');
-      await requestStoragePermission();
-      // Re-check after returning from settings
-      setPermissionChecked(false);
-    } catch (error) {
-      setStatusMessage('Failed to open settings: ' + error.message);
-    }
-  };
 
   const handleExport = () => {
     try {
@@ -63,7 +31,6 @@ export default function DataManagementModal({ visible, onClose, state, actions, 
         downloadJsonWeb(data, `todo-backup-${timestamp}.json`);
         setStatusMessage('Backup downloaded!');
       }
-      // Android export will be added in a later phase
     } catch (error) {
       setStatusMessage('Export failed: ' + error.message);
     }
@@ -73,7 +40,6 @@ export default function DataManagementModal({ visible, onClose, state, actions, 
     if (isWeb && fileInputRef.current) {
       fileInputRef.current.click();
     }
-    // Android import via expo-document-picker will be added later
   };
 
   const handleFileSelected = async (event) => {
@@ -92,7 +58,6 @@ export default function DataManagementModal({ visible, onClose, state, actions, 
       const groupCount = data.groups.length;
 
       if (isWeb) {
-        // On web, use window.confirm since Alert.alert doesn't work
         const confirmed = window.confirm(
           `Import ${taskCount} tasks and ${groupCount} groups?\n\nThis will replace all current data.`
         );
@@ -121,7 +86,6 @@ export default function DataManagementModal({ visible, onClose, state, actions, 
       setStatusMessage('Import failed: ' + error.message);
     }
 
-    // Reset file input so the same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -163,40 +127,10 @@ export default function DataManagementModal({ visible, onClose, state, actions, 
                 />
               </View>
 
-              {/* Sync Status */}
-              {(isWeb || isAndroid) && (
-                <View style={styles.syncSection}>
-                  <View style={styles.syncRow}>
-                    <View style={[
-                      styles.syncDot,
-                      { backgroundColor: syncStatus === 'connected' ? colors.success : syncStatus === 'error' ? colors.danger : colors.textMuted },
-                    ]} />
-                    <Text style={styles.syncText}>
-                      Sync: {syncStatus === 'connected' ? 'Connected' : syncStatus === 'error' ? 'Error' : 'Disconnected'}
-                    </Text>
-                  </View>
-                  {isWeb && syncStatus === 'disconnected' && (
-                    <Text style={styles.syncHint}>
-                      Start the sync server: npm run sync-server
-                    </Text>
-                  )}
-                  {isAndroid && permissionChecked && !hasPermission && (
-                    <Button
-                      title="Grant File Access"
-                      onPress={handleRequestPermission}
-                      variant="secondary"
-                      size="sm"
-                      style={styles.permissionButton}
-                    />
-                  )}
-                </View>
-              )}
-
               {statusMessage && (
                 <Text style={styles.statusMessage}>{statusMessage}</Text>
               )}
 
-              {/* Hidden file input for web import */}
               {isWeb && (
                 <input
                   ref={fileInputRef}
@@ -261,34 +195,5 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     marginTop: spacing.md,
-  },
-  syncSection: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  syncRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  syncDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginRight: spacing.sm,
-  },
-  syncText: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  syncHint: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-  },
-  permissionButton: {
-    marginTop: spacing.sm,
   },
 });
